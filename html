@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <link href="css/bootstrap.css" rel="stylesheet" />
+        <link href="css/font-awesome.css" rel="stylesheet" />
+        <link href="css/custom-styles.css" rel="stylesheet" />
+        <style>
+            
+        </style>
+    </head>
+    
+
+<body>
+
+<div class="row">
+                    <div class="col-md-12">
+                        <h1 class="page-header">
+                            DIT Weather Monitor <small>Firebase + NodeMCU</small>
+                        </h1>
+                    </div>
+                </div>
+
+               <div class="row">
+                    <div class="col-md-12">
+                        <h1 class="page-header">
+                            <small>Current Data</small>
+                        </h1>
+                    </div>
+                </div>           
+                </div>
+
+                 <div class="row">
+                     <div class="col-md-3 col-sm-12 col-xs-12">
+                        <div class="panel panel-primary text-center no-boder bg-color-brown">
+                            <div class="panel-body">
+                                <!-- <i class="fa fa-users fa-5x"></i> -->
+                                <h3 id="now">상태를 읽어오는 중.</h3>
+                            </div>
+                            <div class="panel-footer back-footer-brown">
+                                현재상태                
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-12 col-xs-12">
+                        <div class="panel panel-primary text-center no-boder bg-color-blue">
+                            <div class="panel-body">
+                                <!-- <i class="fa fa-bar-chart-o fa-5x"></i> -->
+                                <h3 id="temp"> </h3>
+                            </div>
+                            <div class="panel-footer back-footer-blue">
+                                습도
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-12 col-xs-12">
+                        <div class="panel panel-primary text-center no-boder bg-color-red">
+                            <div class="panel-body">
+                                <!-- <i class="fa fa-bar-chart-o fa-5x"></i> -->
+                                <h3 id="humi"> </h3>
+                            </div>
+                            <div class="panel-footer back-footer-red">
+                                온도
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-12 col-xs-12">
+                        <div class="panel panel-primary text-center no-boder bg-color-green">
+                            <div class="panel-body">
+                                <!-- <i class="fa fa fa-comments fa-5x"></i> -->
+                                <h3 id="time"> </h3>
+                            </div>
+                            <div class="panel-footer back-footer-green">
+                                현재 시간
+                            </div>
+                        </div>
+                    </div>
+                </div>   
+
+    <div id="chartContainer" style="height: 350px; width: 100%;">
+    </div>
+      <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-app.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-analytics.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/6.2.0/firebase-database.js"></script>
+
+    <script type="text/javascript" src="canvasjs.min.js"></script>
+      <script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyA0BRNI2zjRh7aNMpk4EwhmvpQa_wo_RVc",
+    authDomain: "finaltest-88857.firebaseapp.com",
+    databaseURL: "https://finaltest-88857.firebaseio.com",
+    projectId: "finaltest-88857",
+    storageBucket: "finaltest-88857.appspot.com",
+    messagingSenderId: "84589936658",
+    appId: "1:84589936658:web:d765852537c857966318cb",
+    measurementId: "G-LDK79VN499"
+  };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        
+        var myTimer;
+
+        firebase.database().ref().child('logDHT/').on("child_added", function(snapshot) {
+          clearTimeout(myTimer);
+          
+          console.log(snapshot.val());
+          var newHumi = snapshot.val().humidity;
+          var newTemp = snapshot.val().temperature;
+          var newTime = snapshot.val().time;
+          humi.innerText = "Humidity : " + newHumi + "%";
+          temp.innerText = "Temperature : " + newTemp + "℃";
+          time.innerText = "Time : " + newTime;
+          now.innerText = "현재 상태 : ON";
+            
+          myTimer = setTimeout(function() {//시간 측정함수
+            now.innerText = "현재 상태 : OFF";
+            }, 5000);
+          
+        
+        })
+
+                
+// CnavasJS.Chart 객체 생성 및 사용
+        var chart = new CanvasJS.Chart("chartContainer", {
+                animationEnabled: true,
+                theme: "light1",
+                title: {
+                text: "실시간 온습도센서 - 차트",
+                fontColor: '#03254E',
+            },
+            legend: {
+        		    fontSize: 15
+          	},
+            axisX: {
+                title: "Time",
+                titleFontSize: 14,
+                titleFontColor: '#03254E',
+                valueFormatString: 'HH:mm:ss',
+                labelFontColor: '#03254E',
+            },
+            axisY: {
+                valueFormatString: "0.0#",
+                minimum: 0,
+                maximum: 100,
+                title: "온도(°C) 습도(%)",
+                titleFontColor: '#03254E',
+                titleFontSize: 14,
+                labelFontColor: '#03254E',
+            },
+            toolTip: {
+                shared: true,
+                contentFormatter: function(e) {
+                    var content = CanvasJS.formatDate(e.entries[0].dataPoint.x, "HH:mm:ss") + "<br>";
+                    content += "<strong>온도</strong>: " + e.entries[0].dataPoint.y + " &deg;C<br>";
+                    content += "<strong>습도</strong>: " + e.entries[1].dataPoint.y + " %";
+                    return content;
+                }
+            },
+            animationEnabled: true,
+            data: [{
+                type: "spline", //change it to line, area, column, pie,
+                legendText: "온도",
+                showInLegend: true,
+                markerColor: "#4682B4",
+                markerSize: 1,
+                // type: "splineArea",
+			          // color: "rgba(83, 223, 128, .6)",
+                dataPoints: []
+            }, {
+                type: "spline", //change it to line, area, column, pie, etc
+                legendText: "습도",
+                showInLegend: true,
+                markerSize: 1,
+                dataPoints: []
+            }]
+
+        });
+
+        // get the text value from the database
+        var dbRef = firebase.database().ref('logDHT/');
+
+        dbRef.on('child_added', function(snapshot) {
+            var row = snapshot.val();
+            row.time = new Date(row.time);
+            chart.options.data[0].dataPoints.push({
+                x: row.time,
+                y: row.temperature
+            });
+            chart.options.data[1].dataPoints.push({
+                x: row.time,
+                y: row.humidity
+            });
+            chart.render();
+        });
+
+</script>
+</body>
+</html>
